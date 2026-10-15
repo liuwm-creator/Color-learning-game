@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>小學美術課：趣味色彩大冒險</title>
+  <style>
+    * { box-sizing: border-box; font-family: 'Comic Sans MS', 'Microsoft JhengHei', sans-serif; }
+    body { background-color: #f0f8ff; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+    h1 { color: #333; margin-bottom: 10px; }
+    nav { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
+    button.nav-btn { padding: 10px 15px; font-size: 16px; border: none; border-radius: 8px; cursor: pointer; background: #e0e0e0; transition: 0.3s; }
+    button.nav-btn.active { background: #4CAF50; color: white; font-weight: bold; }
+    
+    .section { display: none; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 650px; text-align: center; }
+    .section.active { display: block; }
+
+    /* 第一部分 */
+    .color-grid { display: flex; justify-content: center; gap: 15px; margin: 20px 0; flex-wrap: wrap; }
+    .color-card { width: 90px; height: 90px; border-radius: 50%; cursor: pointer; border: 4px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: transform 0.2s; }
+    .color-card:hover { transform: scale(1.1); }
+
+    /* 第二部分 */
+    .mix-container { display: flex; align-items: center; justify-content: center; gap: 15px; font-size: 24px; font-weight: bold; margin: 20px 0; }
+    .mix-slot { width: 80px; height: 80px; border-radius: 50%; border: 3px dashed #ccc; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #888; }
+    
+    /* 第三部分 */
+    .match-row { display: flex; align-items: center; justify-content: space-between; margin: 15px 0; background: #f9f9f9; padding: 10px; border-radius: 10px; }
+    select { font-size: 18px; padding: 6px 12px; border-radius: 8px; border: 2px solid #ccc; background: white; cursor: pointer; }
+
+    /* 第四部分 */
+    .canvas-container { margin: 15px 0; background-color: #fafafa; border-radius: 10px; padding: 10px; border: 2px dashed #bbb; }
+    svg path, svg circle, svg rect { cursor: pointer; stroke: #333; stroke-width: 2; transition: fill 0.2s; }
+    .palette { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
+    .palette-btn { width: 35px; height: 35px; border-radius: 50%; border: 2px solid #ccc; cursor: pointer; }
+    .palette-btn.selected { border: 3px solid #000; transform: scale(1.1); }
+
+    .msg { font-size: 18px; margin-top: 15px; font-weight: bold; min-height: 27px; }
+    .btn-action { margin-top: 15px; padding: 10px 25px; font-size: 16px; background-color: #2196F3; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <h1>🎨 趣味色彩大冒險</h1>
+  
+  <nav>
+    <button class="nav-btn active" onclick="showTab(1)">第一關：認識三原色</button>
+    <button class="nav-btn" onclick="showTab(2)">第二關：魔法顏色混合</button>
+    <button class="nav-btn" onclick="showTab(3)">第三關：顏色配對挑戰</button>
+    <button class="nav-btn" onclick="showTab(4)">第四關：創意填色畫板</button>
+  </nav>
+
+  <!-- 第一部分：辨認三原色 -->
+  <div id="sec1" class="section active">
+    <h2>關卡 1：請找出「三原色」！</h2>
+    <p>題目：<span id="target-color-name" style="font-size: 20px; font-weight: bold; color: #d32f2f;"></span></p>
+    <div class="color-grid" id="p1-options"></div>
+    <div class="msg" id="p1-msg"></div>
+  </div>
+
+  <!-- 第二部分：混合三原色變成三間色 -->
+  <div id="sec2" class="section">
+    <h2>關卡 2：三原色變變變（混合三間色）</h2>
+    <p>點擊下方兩種「三原色」放入調色盤，看看能調出什麼「三間色」！</p>
+    <div class="mix-container">
+      <div id="slot1" class="mix-slot">顏色 A</div>
+      <span>+</span>
+      <div id="slot2" class="mix-slot">顏色 B</div>
+      <span>=</span>
+      <div id="slot-result" class="mix-slot" style="border-style: solid;">？</div>
+    </div>
+    <div class="color-grid">
+      <div class="color-card" style="background: red;" onclick="selectMixColor('red', '#ff0000')"></div>
+      <div class="color-card" style="background: yellow;" onclick="selectMixColor('yellow', '#ffff00')"></div>
+      <div class="color-card" style="background: blue;" onclick="selectMixColor('blue', '#0000ff')"></div>
+    </div>
+    <div class="msg" id="p2-msg"></div>
+    <button class="btn-action" onclick="resetMix()">重置調色盤</button>
+  </div>
+
+  <!-- 第三部分：配對顏色組合 -->
+  <div id="sec3" class="section">
+    <h2>關卡 3：色彩組合大配對</h2>
+    <p>請選擇正確的顏色組合，調配出目標的間色：</p>
+    
+    <div class="match-row">
+      <span style="font-size: 18px; font-weight: bold; color: orange;">橙色 (Orange)</span> = 
+      <select id="match1">
+        <option value="">❓🎨</option>
+        <option value="ry">紅色 + 黃色</option>
+        <option value="rb">紅色 + 藍色</option>
+        <option value="yb">黃色 + 藍色</option>
+      </select>
+    </div>
+
+    <div class="match-row">
+      <span style="font-size: 18px; font-weight: bold; color: green;">綠色 (Green)</span> = 
+      <select id="match2">
+        <option value="">❓🎨</option>
+        <option value="ry">紅色 + 黃色</option>
+        <option value="rb">紅色 + 藍色</option>
+        <option value="yb">黃色 + 藍色</option>
+      </select>
+    </div>
+
+    <div class="match-row">
+      <span style="font-size: 18px; font-weight: bold; color: purple;">紫色 (Purple)</span> = 
+      <select id="match3">
+        <option value="">❓🎨</option>
+        <option value="ry">紅色 + 黃色</option>
+        <option value="rb">紅色 + 藍色</option>
+        <option value="yb">黃色 + 藍色</option>
+      </select>
+    </div>
+
+    <button class="btn-action" onclick="checkMatch()">檢查答案</button>
+    <div class="msg" id="p3-msg"></div>
+  </div>
+
+  <!-- 第四部分：填色體驗（日落主題） -->
+  <div id="sec4" class="section">
+    <h2>關卡 4：三原色與三間色填色體驗</h2>
+    <p>選擇喜歡的顏色，點擊塗鴉圖案填上色彩吧！</p>
+    
+    <div class="canvas-container">
+      <svg width="280" height="200" viewBox="0 0 280 200">
+        <!-- 天空背景區塊 -->
+        <path d="M 0 0 L 280 0 L 280 120 L 0 120 Z" fill="#ffffff" onclick="colorPath(this)"/>
+        
+        <!-- 白雲 1 -->
+        <path d="M 30 40 Q 40 25 55 30 Q 70 20 85 30 Q 95 40 85 50 Q 30 55 30 40 Z" fill="#ffffff" onclick="colorPath(this)"/>
+        
+        <!-- 白雲 2 -->
+        <path d="M 190 30 Q 200 15 215 20 Q 230 10 245 20 Q 255 30 245 40 Q 190 45 190 30 Z" fill="#ffffff" onclick="colorPath(this)"/>
+        
+        <!-- 落日（半圓） -->
+        <path d="M 100 120 A 40 40 0 0 1 180 120 Z" fill="#ffffff" onclick="colorPath(this)"/>
+        
+        <!-- 左側山丘 -->
+        <path d="M 0 120 Q 50 80 110 120 Z" fill="#ffffff" onclick="colorPath(this)"/>
+        
+        <!-- 右側山丘 -->
+        <path d="M 160 120 Q 220 85 280 120 Z" fill="#ffffff" onclick="colorPath(this)"/>
+        
+        <!-- 海面波浪 1 -->
+        <path d="M 0 120 Q 70 110 140 120 Q 210 130 280 120 L 280 145 L 0 145 Z" fill="#ffffff" onclick="colorPath(this)"/>
+        
+        <!-- 海面波浪 2 -->
+        <path d="M 0 145 Q 70 135 140 145 Q 210 155 280 145 L 280 170 L 0 170 Z" fill="#ffffff" onclick="colorPath(this)"/>
+        
+        <!-- 海面波浪 3 -->
+        <path d="M 0 170 Q 70 160 140 170 Q 210 180 280 170 L 280 200 L 0 200 Z" fill="#ffffff" onclick="colorPath(this)"/>
+      </svg>
+    </div>
+
+    <p>選擇畫筆顏色：</p>
+    <div class="palette">
+      <div class="palette-btn selected" style="background: red;" onclick="setPaintColor('red', this)"></div>
+      <div class="palette-btn" style="background: yellow;" onclick="setPaintColor('yellow', this)"></div>
+      <div class="palette-btn" style="background: blue;" onclick="setPaintColor('blue', this)"></div>
+      <div class="palette-btn" style="background: orange;" onclick="setPaintColor('orange', this)"></div>
+      <div class="palette-btn" style="background: green;" onclick="setPaintColor('green', this)"></div>
+      <div class="palette-btn" style="background: purple;" onclick="setPaintColor('purple', this)"></div>
+    </div>
+  </div>
+
+  <script>
+    // 分頁切換
+    function showTab(n) {
+      document.querySelectorAll('.section').forEach((s, idx) => {
+        s.classList.toggle('active', idx === n - 1);
+      });
+      document.querySelectorAll('.nav-btn').forEach((b, idx) => {
+        b.classList.toggle('active', idx === n - 1);
+      });
+    }
+
+    /* --- 第一部分：辨認三原色 --- */
+    const p1Colors = [
+      { name: '紅色', code: '#ff0000', isPrimary: true },
+      { name: '黃色', code: '#ffff00', isPrimary: true },
+      { name: '藍色', code: '#0000ff', isPrimary: true },
+      { name: '綠色', code: '#008000', isPrimary: false },
+      { name: '橙色', code: '#ffa500', isPrimary: false },
+      { name: '紫色', code: '#800080', isPrimary: false }
+    ];
+    let currentP1Target = null;
+
+    function initP1() {
+      const primaries = p1Colors.filter(c => c.isPrimary);
+      currentP1Target = primaries[Math.floor(Math.random() * primaries.length)];
+      document.getElementById('target-color-name').innerText = currentP1Target.name;
+      
+      const container = document.getElementById('p1-options');
+      container.innerHTML = '';
+      
+      const shuffled = [...p1Colors].sort(() => Math.random() - 0.5);
+      shuffled.forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'color-card';
+        div.style.background = c.code;
+        div.onclick = () => checkP1(c);
+        container.appendChild(div);
+      });
+      document.getElementById('p1-msg').innerText = '';
+    }
+
+    function checkP1(selected) {
+      const msg = document.getElementById('p1-msg');
+      if (selected.name === currentP1Target.name) {
+        msg.style.color = 'green';
+        msg.innerText = '🎉 答對了！這是三原色之一！';
+        setTimeout(initP1, 1500);
+      } else {
+        msg.style.color = 'red';
+        msg.innerText = selected.isPrimary ? '這是三原色，但不是題目要找的顏色喔！再試一次！' : '這是間色（由兩種原色混合而成），不是原色喔！再試一次！';
+      }
+    }
+
+    /* --- 第二部分：混合顏色 --- */
+    let mixSelection = [];
+
+    function selectMixColor(name, code) {
+      if (mixSelection.length < 2) {
+        mixSelection.push({ name, code });
+        updateMixUI();
+      }
+      if (mixSelection.length === 2) {
+        calculateMix();
+      }
+    }
+
+    function updateMixUI() {
+      const slot1 = document.getElementById('slot1');
+      const slot2 = document.getElementById('slot2');
+      
+      if (mixSelection[0]) {
+        slot1.style.background = mixSelection[0].code;
+        slot1.innerText = '';
+      } else {
+        slot1.style.background = 'transparent';
+        slot1.innerText = '顏色 A';
+      }
+
+      if (mixSelection[1]) {
+        slot2.style.background = mixSelection[1].code;
+        slot2.innerText = '';
+      } else {
+        slot2.style.background = 'transparent';
+        slot2.innerText = '顏色 B';
+      }
+    }
+
+    function calculateMix() {
+      const names = mixSelection.map(c => c.name).sort().join('+');
+      const resSlot = document.getElementById('slot-result');
+      const msg = document.getElementById('p2-msg');
+      
+      let resColor = '', resName = '';
+
+      if (names === 'red+yellow') { resColor = 'orange'; resName = '橙色'; }
+      else if (names === 'blue+yellow') { resColor = 'green'; resName = '綠色'; }
+      else if (names === 'blue+red') { resColor = 'purple'; resName = '紫色'; }
+      else if (mixSelection[0].name === mixSelection[1].name) {
+        resColor = mixSelection[0].code;
+        resName = '一樣的顏色';
+      }
+
+      resSlot.style.background = resColor;
+      resSlot.innerText = '';
+      msg.style.color = '#333';
+      msg.innerText = `✨ 魔法成功！成功調出間色：${resName}！`;
+    }
+
+    function resetMix() {
+      mixSelection = [];
+      updateMixUI();
+      const resSlot = document.getElementById('slot-result');
+      resSlot.style.background = 'transparent';
+      resSlot.innerText = '？';
+      document.getElementById('p2-msg').innerText = '';
+    }
+
+    /* --- 第三部分：配對顏色 --- */
+    function checkMatch() {
+      const m1 = document.getElementById('match1').value;
+      const m2 = document.getElementById('match2').value;
+      const m3 = document.getElementById('match3').value;
+      const msg = document.getElementById('p3-msg');
+
+      if (m1 === 'ry' && m2 === 'yb' && m3 === 'rb') {
+        msg.style.color = 'green';
+        msg.innerText = '🌟 太棒了！全部配對正確！你已經掌握三原色與三間色的關係了！';
+      } else {
+        msg.style.color = 'red';
+        msg.innerText = '❌ 有些地方配對錯囉，再想想看原色是怎麼組合的！';
+      }
+    }
+
+    /* --- 第四部分：填色體驗 --- */
+    let currentPaintColor = 'red';
+
+    function setPaintColor(color, btn) {
+      currentPaintColor = color;
+      document.querySelectorAll('.palette-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    }
+
+    function colorPath(element) {
+      element.setAttribute('fill', currentPaintColor);
+    }
+
+    // 初始化第一關
+    initP1();
+  </script>
+</body>
+</html>
